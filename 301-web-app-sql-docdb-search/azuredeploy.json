@@ -2,16 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "databaseAccountName": {
-      "type": "string",
-      "minLength": 3,
-      "metadata": {
-        "description": "The Azure Cosmos DB database account name."
-      }
-    },
     "consistencyLevel": {
       "type": "string",
-      "defaultValue": "Session",
+      "defaultValue": "Eventual",
       "allowedValues": [
         "Eventual",
         "Strong",
@@ -43,12 +36,14 @@
     "sqlServerAdminLogin": {
       "type": "string",
       "minLength": 1,
+      "defaultValue" :  "demouser",
       "metadata": {
         "description": "The SQL server admin username."
       }
     },
     "sqlServerAdminLoginPassword": {
       "type": "securestring",
+      "defaultValue": "sysadmin$123",
       "metadata": {
         "description": "The SQL server admin password"
       }
@@ -56,6 +51,7 @@
     "sqlDatabaseName": {
       "type": "string",
       "minLength": 1,
+      "defaultValue": "labsdb",
       "metadata": {
         "description": "The SQL database name"
       }
@@ -99,6 +95,7 @@
     "webAppName": {
       "type": "string",
       "minLength": 1,
+      "defaultValue": "labsweb",
       "metadata": {
         "description": "The name of the Web App"
       }
@@ -144,6 +141,7 @@
     },
     "azureSearchname": {
       "type": "string",
+      "defaultValue": "labssearch",
       "metadata": {
         "description": "The azure search instance name"
       }
@@ -209,20 +207,27 @@
     }
   },
   "variables": {
-    "sqlServerName": "[concat(uniquestring(resourceGroup().id), 'sqlserver')]",
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'storage')]"
+    "sqlServerName": "[concat(resourceGroup().name, 'sqlsvr')]",
+    "storageAccountName": "[concat(resourceGroup().name, 'storage')]",
+    "databaseAccountName": "[concat(resourceGroup().name, 'dbaccount')]",
+    "sqlServerAdminLogin": "[concat(resourceGroup().name, 'sqladmin')]",
+    "sqlServerAdminLoginPassword": "[concat(resourceGroup().name, '$123')]",
+    "sqlDatabaseName": "[concat(resourceGroup().name, 'sqldb')]",
+    "webAppName": "[concat(resourceGroup().name, 'webapp')]",
+    "azureSearchname": "[concat(resourceGroup().name, 'search')]"
+
   },
   "resources": [
     {
+      "name": "[variables('databaseAccountName')]",
       "apiVersion": "2015-04-08",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "name": "[parameters('databaseAccountName')]",
       "location": "[parameters('location')]",
       "tags": {
         "displayName": "DocumentDB"
       },
       "properties": {
-        "name": "[parameters('databaseAccountName')]",
+        "name": "[variables('databaseAccountName')]",
         "databaseAccountOfferType": "[parameters('documentDBOfferType')]",
         "consistencyPolicy": {
           "defaultConsistencyLevel": "[parameters('consistencyLevel')]",
@@ -247,8 +252,8 @@
         "displayName": "SQL Server"
       },
       "properties": {
-        "administratorLogin": "[parameters('sqlServerAdminLogin')]",
-        "administratorLoginPassword": "[parameters('sqlServerAdminLoginPassword')]",
+        "administratorLogin": "[variables('sqlServerAdminLogin')]",
+        "administratorLoginPassword": "[variables('sqlServerAdminLoginPassword')]",
         "version": "12.0"
       },
       "resources": [
@@ -266,7 +271,7 @@
           }
         },
         {
-          "name": "[parameters('sqlDatabaseName')]",
+          "name": "[variables('sqlDatabaseName')]",
           "type": "databases",
           "location": "[parameters('location')]",
           "apiVersion": "2014-04-01-preview",
@@ -286,7 +291,7 @@
       ]
     },
     {
-      "name": "[parameters('webAppName')]",
+      "name": "[variables('webAppName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[parameters('location')]",
       "apiVersion": "2014-06-01",
@@ -295,27 +300,25 @@
         "displayName": "App Service Plan"
       },
       "properties": {
-        "name": "[parameters('webAppName')]",
         "sku": "[parameters('webAppSKU')]",
         "workerSize": "[parameters('workerSize')]",
         "numberOfWorkers": 1
       }
     },
     {
-      "name": "[parameters('webAppName')]",
+      "name": "[variables('webAppName')]",
       "type": "Microsoft.Web/sites",
       "location": "[parameters('location')]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
-        "[concat('Microsoft.Web/serverfarms/', parameters('webAppName'))]"
+        "[concat('Microsoft.Web/serverfarms/', variables('webAppName'))]"
       ],
       "tags": {
-        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('webAppName'))]": "Resource",
+        "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('webAppName'))]": "Resource",
         "displayName": "Web App"
       },
       "properties": {
-        "name": "[parameters('webAppName')]",
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', parameters('webAppName'))]"
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms/', variables('webAppName'))]"
       },
       "resources": []
     },
@@ -334,7 +337,7 @@
     },
     {
       "apiVersion": "2015-02-28",
-      "name": "[parameters('azureSearchname')]",
+      "name": "[variables('azureSearchname')]",
       "type": "Microsoft.Search/searchServices",
       "location": "[parameters('location')]",
       "tags": {
@@ -349,18 +352,18 @@
       }
     },
     {
-      "name": "appinsights",
+      "name": "[variables('webAppName')]",
       "type": "Microsoft.Insights/components",
-      "location": "Central US",
-      "apiVersion": "2014-04-01",
+      "location": "[parameters('location')]",
+      "apiVersion": "2015-05-01",
       "dependsOn": [
-        "[concat('Microsoft.Web/sites/', parameters('webAppName'))]"
+        "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
       ],
       "tags": {
         "displayName": "Application Insights"
       },
       "properties": {
-        "applicationId": "[parameters('webAppName')]"
+        "applicationId": "[variables('webAppName')]"
       }
     }
   ]
