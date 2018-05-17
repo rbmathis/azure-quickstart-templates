@@ -148,7 +148,7 @@
     },
     "azureSearchSku": {
       "type": "string",
-      "defaultValue": "free",
+      "defaultValue": "standard",
       "allowedValues": [
         "free",
         "standard",
