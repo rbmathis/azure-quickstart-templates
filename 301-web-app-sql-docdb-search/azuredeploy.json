@@ -207,14 +207,14 @@
     }
   },
   "variables": {
-    "sqlServerName": "[take(concat(resourceGroup().name, 'sqlsvr'), 15)]",
-    "storageAccountName": "[take(concat(resourceGroup().name, 'storage'), 15)]",
-    "databaseAccountName": "[take(concat(resourceGroup().name, 'dbaccount'), 15)]",
-    "sqlServerAdminLogin": "[take(concat(resourceGroup().name, 'sqladmin'), 15)]",
-    "sqlServerAdminLoginPassword": "[concat(resourceGroup().name, '$123')]",
-    "sqlDatabaseName": "[take(concat(resourceGroup().name, 'sqldb'), 15)]",
-    "webAppName": "[take(concat(resourceGroup().name, 'webapp'), 15)]",
-    "azureSearchname": "[take(concat(resourceGroup().name, 'search'), 15)]"
+    "sqlServerName": "[uniqueString(resourceGroup().id)]", //must be globally unique
+    "storageAccountName": "[uniqueString(resourceGroup().id)]", //must be globally unique
+    "databaseAccountName": "[uniqueString(resourceGroup().id)]", //must be globally unique
+    "sqlServerAdminLogin": "sysadmin",
+    "sqlServerAdminLoginPassword": "Sysadmin$123",
+    "sqlDatabaseName": "db",
+    "webAppName": "[uniqueString(resourceGroup().id)]", //must be globally unique
+    "azureSearchname": "[uniqueString(resourceGroup().id)]" //must be globally unique
 
   },
   "resources": [
@@ -222,7 +222,7 @@
       "name": "[variables('databaseAccountName')]",
       "apiVersion": "2015-04-08",
       "type": "Microsoft.DocumentDB/databaseAccounts",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "DocumentDB"
       },
@@ -245,7 +245,7 @@
     {
       "name": "[variables('sqlServerName')]",
       "type": "Microsoft.Sql/servers",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "apiVersion": "2014-04-01-preview",
       "dependsOn": [],
       "tags": {
@@ -260,7 +260,7 @@
         {
           "name": "AllowAllWindowsAzureIps",
           "type": "firewallrules",
-          "location": "[parameters('location')]",
+          "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
           "dependsOn": [
             "[concat('Microsoft.Sql/servers/', variables('sqlServerName'))]"
@@ -273,7 +273,7 @@
         {
           "name": "[variables('sqlDatabaseName')]",
           "type": "databases",
-          "location": "[parameters('location')]",
+          "location": "[resourceGroup().location]",
           "apiVersion": "2014-04-01-preview",
           "dependsOn": [
             "[variables('sqlServerName')]"
@@ -293,7 +293,7 @@
     {
       "name": "[variables('webAppName')]",
       "type": "Microsoft.Web/serverfarms",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "apiVersion": "2014-06-01",
       "dependsOn": [],
       "tags": {
@@ -308,7 +308,7 @@
     {
       "name": "[variables('webAppName')]",
       "type": "Microsoft.Web/sites",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "apiVersion": "2015-08-01",
       "dependsOn": [
         "[concat('Microsoft.Web/serverfarms/', variables('webAppName'))]"
@@ -325,7 +325,7 @@
     {
       "name": "[variables('storageAccountName')]",
       "type": "Microsoft.Storage/storageAccounts",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
       "dependsOn": [],
       "tags": {
@@ -339,7 +339,7 @@
       "apiVersion": "2015-02-28",
       "name": "[variables('azureSearchname')]",
       "type": "Microsoft.Search/searchServices",
-      "location": "[parameters('location')]",
+      "location": "[resourceGroup().location]",
       "tags": {
         "displayName": "Azure Search"
       },
