@@ -207,14 +207,14 @@
     }
   },
   "variables": {
-    "sqlServerName": "[concat('sqlsvr', resourceGroup().id)]",
-    "storageAccountName": "[concat('storage', resourceGroup().id)]",
-    "databaseAccountName": "[concat('cosmos', resourceGroup().id)]",
-    "sqlServerAdminLogin": "[concat('sqladmin', resourceGroup().id)]",
-    "sqlServerAdminLoginPassword": "[concat(resourceGroup().id, '$123')]",
-    "sqlDatabaseName": "[concat('sqldb', resourceGroup().id)]",
-    "webAppName": "[concat('webapp', resourceGroup().id)]",
-    "azureSearchname": "[concat('search', resourceGroup().id)]"
+    "sqlServerName": "[concat(resourceGroup().name, 'sqlsvr')]",
+    "storageAccountName": "[concat(resourceGroup().name, 'storage')]",
+    "databaseAccountName": "[concat(resourceGroup().name, 'dbaccount')]",
+    "sqlServerAdminLogin": "[concat(resourceGroup().name, 'sqladmin')]",
+    "sqlServerAdminLoginPassword": "[concat(resourceGroup().name, '$123')]",
+    "sqlDatabaseName": "[concat(resourceGroup().name, 'sqldb')]",
+    "webAppName": "[concat(resourceGroup().name, 'webapp')]",
+    "azureSearchname": "[concat(resourceGroup().name, 'search')]"
 
   },
   "resources": [
